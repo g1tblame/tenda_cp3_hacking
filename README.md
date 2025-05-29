@@ -37,3 +37,12 @@ Let's use the flashrom utility to dump the firmware:
 ```
 sudo flashrom -p buspirate_spi:dev=/dev/ttyUSB0 -r camera_fw.bin
 ```
+
+So, I dumped whole firmware from the device. Few minutes and 8-megabytes file of firmware in our hands.
+
+## Chapter 3: Firmware analysis
+
+To inspect the contents of a firmware file, we can use the binwalk utility (without any flags initially) to analyze its structure:
+```
+binwalk camera_fw.bin
+```
