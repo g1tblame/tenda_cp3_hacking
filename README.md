@@ -1,1 +1,1 @@
-# tenda_cp3_hacking
+# Tenda CP3 reverse engineering
