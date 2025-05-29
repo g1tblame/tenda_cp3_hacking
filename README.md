@@ -18,3 +18,6 @@ Most likely, this is the easiest stage of the whole project since all you need i
 
 1) SoC of Tenda CP3 camera – _**Fulhan FH8626**_. This SoC is widely used in IP cameras and is responsible for image signal processing:
 <img src="./assets/images/fulhan_microskope.jpg">
+
+2) Flash chip – _**cFeon QH64A**_. This is the chip where the main camera firmware is located:
+<img src="./assets/images/cfeon_microskope.jpg">
