@@ -153,6 +153,7 @@ austack_308 - name of the executable file.
 ## Chapter 6: creating an exploit
 
 Initially, I considered developing a "reverse shell" exploit, where the target (in this case, the camera) would initiate a connection back to the host. However, this approach requires the netcat utility on the target device, which is not present on the camera. Fortunately, the camera has telnetd, which allows us to open any port we choose. This enables us to create a "bind shell" exploit instead.
+
     1) Connect to port 1300 on the camera;
     2) Send a payload containing the ELFEXEC command to access the vulnerable functions in the binary;
     3) Once step 2 is successful, the camera will "download" a binary from the host. In this case, the binary’s content will be:
