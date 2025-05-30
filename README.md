@@ -201,6 +201,9 @@ As can be seen in the last few lines, if the command we sent is "reboot," the pr
 <YGMP_CMD><TARGET>ip_was_here</TARGET><MAC>10:20:30:40:50:60</MAC><CMD>echo pwned_by_cr0cus > /dev/kmsg </CMD></YGMP_CMD>
 ```
 
+After sending that payload we see such line in dmesg:
+<img src="./assets/images/kernel_buffer.jpg">
+
 Where echo pwned_by_cr0cus > /dev/kmsg is our malicious payload that leaves a trace in the kernel's ring buffer. The result is shown in the screenshot.
 In fact, the developers left the last line so that any arbitrary code could be executed on the camera. In other words, this vulnerability allows you to easily gain root access.
 
