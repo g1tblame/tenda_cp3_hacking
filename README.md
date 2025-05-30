@@ -116,5 +116,52 @@ I analyzed the main function and identified two key sections of the code that ar
 
 <img src="./assets/images/Pasted image 20250502195401.png">
 
+We are particularly interested in the code segment responsible for parsing user input and executing specific functions based on that input. This section is critical, as it may reveal how the binary processes commands and interacts with the system:
 
+<img src="./assets/images/Pasted image 20250502200505.png">
 
+From the code, we can see that sending the command "ELFEXEC" to the camera triggers the execution of an ELF binary. This functionality resembles a backdoor, which, given that this is a Chinese-manufactured device, might not be entirely surprising.
+
+Note: The highlighted function FUN_000152a8 is responsible for parsing user input and is extensively used throughout the binary. For clarity, I later renamed it to input_cmd_checker. The expected command format for interacting with this function is as follows:
+
+```
+<ELFEXEC>some_sh1t</ELFEXEC>
+```
+
+After input_cmd_checker function, noodles starts vulnerable function FUN_00012a04:
+
+<img src="./assets/images/Pasted image 20250502202255.png">
+
+Additionally, the function at FUN_00012274 handles the retrieval of a binary file from a remote host. Its implementation is straightforward: the device creates a file named based on the third parameter (param3) and writes all data received through a socket to this file.
+
+The highlight of this analysis is the function at FUN_00017ca4 (marked in the red rectangle), which appears to be critical to the binary’s behavior:
+
+<img src="./assets/images/Pasted image 20250502203408.png">
+
+This function blindly execute any code with the help of system function.
+
+So camera downloads file from the host with ELFEXEC cmd, then it makes this file executable:
+
+<img src="./assets/images/Pasted image 20250502203707.png">
+
+And then executes it:
+
+<img src="./assets/images/Pasted image 20250502203732.png">
+
+austack_308 - name of the executable file.
+
+## Chapter 6: creating an exploit
+
+Initially, I considered developing a "reverse shell" exploit, where the target (in this case, the camera) would initiate a connection back to the host. However, this approach requires the netcat utility on the target device, which is not present on the camera. Fortunately, the camera has telnetd, which allows us to open any port we choose. This enables us to create a "bind shell" exploit instead.
+    1) Connect to port 1300 on the camera;
+    2) Send a payload containing the ELFEXEC command to access the vulnerable functions in the binary;
+    3) Once step 2 is successful, the camera will "download" a binary from the host. In this case, the binary’s content will be:
+    ```
+      telnetd -p 8888 -l /bin/sh &
+    ```
+
+    This command starts to listen on port 8888, providing access to a shell.
+    
+    When the exploit is executed, it sends the payload, and the camera runs the telnetd command. Finally, we can connect from our host to port 8888 on the camera to gain shell access. Bingo!
+
+<img src="./assets/images/Pasted image 20250502211253.png">
