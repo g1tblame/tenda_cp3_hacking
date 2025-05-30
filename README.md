@@ -160,8 +160,8 @@ Initially, I considered developing a "reverse shell" exploit, where the target (
       telnetd -p 8888 -l /bin/sh &
     ```
 
-    This command starts to listen on port 8888, providing access to a shell.
-    
-    When the exploit is executed, it sends the payload, and the camera runs the telnetd command. Finally, we can connect from our host to port 8888 on the camera to gain shell access. Bingo!
+This command starts to listen on port 8888, providing access to a shell.
+
+When the exploit is executed, it sends the payload, and the camera runs the telnetd command. Finally, we can connect from our host to port 8888 on the camera to gain shell access. Bingo!
 
 <img src="./assets/images/Pasted image 20250502211253.png">
