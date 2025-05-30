@@ -46,3 +46,22 @@ To inspect the contents of a firmware file, we can use the binwalk utility (with
 ```
 binwalk camera_fw.bin
 ```
+
+Here is the result:
+
+<img src="./assets/images/binwalk.png">
+
+At this stage, we are particularly interested in the SquashFS file system, as it typically contains the file system of the entire device. To extract the contents of all firmware partitions, including SquashFS, we can use binwalk with the -e flag. This will unpack the firmware and provide access to the device's file system:
+
+<img src="./assets/images/Pasted image 20250510214753.png">
+
+I highlighted shadow file since it contains hash of root-password:
+
+```
+root:7h2yflPlPVV5.:18545:0:99999:7:::
+```
+
+To decrypt this hash, we could use a tool like hashcat. However, in this case, a quick Google search revealed that someone has already cracked this hash (kudos to them!). The root password is tdrootfs. Using this password, open minicom, log in as root with the password tdrootfs, and voilà - we now have full access to the device:
+
+<img src="./assets/images/Pasted image 20250510215104.png">
+
