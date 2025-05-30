@@ -40,7 +40,7 @@ sudo flashrom -p buspirate_spi:dev=/dev/ttyUSB0 -r camera_fw.bin
 
 So, I dumped whole firmware from the device. Few minutes and 8-megabytes file of firmware in our hands.
 
-## Chapter 3: Firmware analysis
+## Chapter 3: Firmware file analysis
 
 To inspect the contents of a firmware file, we can use the binwalk utility (without any flags initially) to analyze its structure:
 ```
@@ -64,4 +64,57 @@ root:7h2yflPlPVV5.:18545:0:99999:7:::
 To decrypt this hash, we could use a tool like hashcat. However, in this case, a quick Google search revealed that someone has already cracked this hash (kudos to them!). The root password is tdrootfs. Using this password, open minicom, log in as root with the password tdrootfs, and voilà - we now have full access to the device:
 
 <img src="./assets/images/Pasted image 20250510215104.png">
+
+
+## Chapter 4: analyzing runtime of device
+
+With full access to the device, we can begin investigating how it works. Let's start by listing all running processes to understand the device's behavior:
+
+<img src="./assets/images/Pasted image 20250501215036.png">
+
+By the way, I highly recommend using the ps command with the -t flag, as it displays a list of all threads created by running processes. You might wonder why I highlighted two specific processes: apollo and noodles. The reason is straightforward: since our camera interacts with the network, we should analyze all open ports to understand its network activity. You can do this using:
+
+```
+netstat -natpu
+```
+
+Here is the output:
+
+<img src="./assets/images/Pasted image 20250510215657.png">
+
+As you can see, most of the open ports are associated with the two processes (apollo and noodles) I mentioned earlier. With this in mind, let’s dive into reverse engineering these processes to gain deeper insights into their functionality.
+
+## Chapter 5: analyze and looking for vulnerabilities in noodles
+
+Reverse engineering any binary begins with identifying its architecture:
+
+```
+➜  abin git:(master) ✗ file noodles
+noodles: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-uClibc.so.0, stripped
+```
+
+Running the file command on the noodles binary reveals that it is a 32-bit ARM executable. Additionally, I executed the strings command on the file and noticed that it is packed with the UPX packer, which suggests that the binary is compressed to obfuscate its contents:
+
+```
+This file is packed with the UPX executable packer http://upx.sf.net
+```
+
+So let's unpack it with:
+```
+upx -d noodles
+```
+
+load it into the Ghidra and start our analysis.
+
+I analyzed the main function and identified two key sections of the code that are worth highlighting:
+
+1) FUN_000151d0 -- this function creates socket, binds it to the  port 1300 and start listening for incoming connections:
+
+<img src="./assets/images/Pasted image 20250502195046.png">
+
+2) and second part accepts connections from other hosts and receives input from the user:
+
+<img src="./assets/images/Pasted image 20250502195401.png">
+
+
 
