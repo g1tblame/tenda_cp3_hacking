@@ -202,6 +202,7 @@ As can be seen in the last few lines, if the command we sent is "reboot," the pr
 ```
 
 After sending that payload we see such line in dmesg:
+
 <img src="./assets/images/kernel_buffer.jpg">
 
 Where echo pwned_by_cr0cus > /dev/kmsg is our malicious payload that leaves a trace in the kernel's ring buffer. The result is shown in the screenshot.
