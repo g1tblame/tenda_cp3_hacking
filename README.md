@@ -157,6 +157,7 @@ Initially, I considered developing a "reverse shell" exploit, where the target (
     1) Connect to port 1300 on the camera;
     2) Send a payload containing the ELFEXEC command to access the vulnerable functions in the binary;
     3) Once step 2 is successful, the camera will "download" a binary from the host. In this case, the binary’s content will be:
+
     ```
       telnetd -p 8888 -l /bin/sh &
     ```
